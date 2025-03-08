@@ -48,12 +48,16 @@ MainWindow::MainWindow(QWidget *parent)
     bodyDef.angularDamping = 0;
     bodyDef.angularVelocity = 3.f;
     bodyId = b2CreateBody(worldId, &bodyDef);
-    dynamicBox = b2MakeBox(14.0f, 14.0f);
+    //dynamicBox = b2MakeBox(14.0f, 14.0f);
     shapeDef = b2DefaultShapeDef();
     shapeDef.density = 0.00005f;
-    shapeDef.friction = 0.3f;
-    shapeDef.restitution = 0.5f;
-    b2CreatePolygonShape(bodyId, &shapeDef, &dynamicBox);
+    //shapeDef.friction = 0.3f;
+    //shapeDef.restitution = 0.5f;
+    for (int i=0;i<5;i++) {
+        dynamicBox = b2MakeOffsetBox(14.0f, 14.0f,
+                                     b2Vec2{i*28.f,-80.f + (i*28.f)}, b2Rot_identity);
+        b2CreatePolygonShape(bodyId, &shapeDef, &dynamicBox);
+    }
     simulateTimer = new QTimer(this);
     simulateTimer->setInterval(1000/(float)numSimulationFrames);
     connect(simulateTimer, &QTimer::timeout, this, [&](){
@@ -79,32 +83,36 @@ b2ShapeId getb2BodyMainShape(const b2BodyId& id)
 
 void drawb2Body(QPainter& p, const b2BodyId& bodyId)
 {
-    b2Polygon b2poly = b2Shape_GetPolygon(getb2BodyMainShape(bodyId));
     // Theres a link between masses and shapes
-    auto md = b2Shape_GetMassData(getb2BodyMainShape(bodyId));
-    auto bodyTransform = b2Body_GetTransform(bodyId);
-    QTransform m;
-    QPointF center{md.center.x, md.center.y};
-    QList<QPointF> pts;
-    pts.reserve(b2poly.count);
-    for (int i=0; i < b2poly.count; i++) {
-        b2Vec2 np = b2TransformPoint(bodyTransform, b2poly.vertices[i]);
-        //pts.push_back({b2poly.vertices[i].x,b2poly.vertices[i].y});
-        QPointF npf{np.x,np.y};
-        pts.push_back(npf);
-        /*
-        p.drawText(npf,
-                   QString("%1:%2,%3")
-                       .number(i).number(npf.x(),'g',3).number(npf.y(),'g',3));
-        */
+    // bodies can have many shapes (that are linked)
+    const int shapeCount = b2Body_GetShapeCount(bodyId);
+    b2ShapeId tempShapes[shapeCount];
+    b2Body_GetShapes(bodyId, tempShapes, shapeCount);
+    for (int si=0; si<shapeCount; si++) {
+        auto md = b2Shape_GetMassData(tempShapes[si]);
+        auto bodyTransform = b2Body_GetTransform(bodyId);
+        QList<QPointF> pts;
+        b2Polygon b2poly = b2Shape_GetPolygon(tempShapes[si]);
+        pts.reserve(b2poly.count);
+        for (int i=0; i < b2poly.count; i++) {
+            b2Vec2 np = b2TransformPoint(bodyTransform, b2poly.vertices[i]);
+            //pts.push_back({b2poly.vertices[i].x,b2poly.vertices[i].y});
+            QPointF npf{np.x,np.y};
+            pts.push_back(npf);
+            /*
+            p.drawText(npf,
+                       QString("%1:%2,%3")
+                           .number(i).number(npf.x(),'g',3).number(npf.y(),'g',3));
+            */
+        }
+        //pts.push_back(pts[0]);
+        auto drawPolygon = QPolygonF::fromList(pts);
+        p.drawConvexPolygon(drawPolygon);
+        p.save();
+        p.setPen(QPen(QBrush(Qt::GlobalColor::black), 5.f));
+        p.drawPoints(drawPolygon);
+        p.restore();
     }
-    //pts.push_back(pts[0]);
-    auto drawPolygon = QPolygonF::fromList(pts);
-    p.drawConvexPolygon(drawPolygon);
-    p.save();
-    p.setPen(QPen(QBrush(Qt::GlobalColor::black), 5.f));
-    p.drawPoints(drawPolygon);
-    p.restore();
 }
 
 void MainWindow::paintEvent(QPaintEvent *e)
