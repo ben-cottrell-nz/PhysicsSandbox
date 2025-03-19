@@ -1,6 +1,7 @@
 #include "physworldview.h"
 #include <QPainter>
 #include <QOpenGLFunctions>
+#include <random>
 
 std::chrono::time_point<std::chrono::steady_clock> st;
 
@@ -59,14 +60,14 @@ PhysWorldView::~PhysWorldView() {
 void PhysWorldView::initializeGL()
 {
     QOpenGLFunctions* f = QOpenGLContext::currentContext()->functions();
-    f->glEnable(GL_MULTISAMPLE);
+    //f->glEnable(GL_MULTISAMPLE);
     f->glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void PhysWorldView::paintGL()
 {
     QOpenGLFunctions* f = QOpenGLContext::currentContext()->functions();
-    f->glEnable(GL_MULTISAMPLE);
+    //f->glEnable(GL_MULTISAMPLE);
     f->glClear(GL_COLOR_BUFFER_BIT);
 }
 
@@ -104,6 +105,7 @@ void PhysWorldView::drawb2Body(QPainter& p, const b2BodyId& bodyId)
         //pts.push_back(pts[0]);
         auto drawPolygon = QPolygonF::fromList(pts);
         p.drawConvexPolygon(drawPolygon);
+        p.setBrush(QBrush(QColor(0x542c2c)));
         p.save();
         p.setPen(QPen(QBrush(Qt::GlobalColor::black), 5.f));
         p.drawPoints(drawPolygon);

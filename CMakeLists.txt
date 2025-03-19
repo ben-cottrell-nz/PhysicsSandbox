@@ -27,9 +27,13 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 				physworldview.h physworldview.cpp
     )
 # Define target properties for Android with Qt 6 as:
-#    set_property(TARGET PhysicsSandbox APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
-#                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
+set_target_properties(${target} PROPERTIES
+    QT_ANDROID_PACKAGE_NAME "org.qtproject.example.PhysicsSandbox"
+    QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android
+)
+
 # For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
+set_property(TARGET PhysicsSandbox APPEND PROPERTY QT_ANDROID_MIN_SDK_VERSION 27)
 else()
     if(ANDROID)
         add_library(PhysicsSandbox SHARED
@@ -44,7 +48,11 @@ else()
     endif()
 endif()
 
-target_link_directories(PhysicsSandbox BEFORE PRIVATE ${BOX2D_PATH}/build/src)
+if (ANDROID)
+  target_link_directories(PhysicsSandbox BEFORE PRIVATE ${BOX2D_PATH}/build-android-${ANDROID_ABI}/src)
+else()
+  target_link_directories(PhysicsSandbox BEFORE PRIVATE ${BOX2D_PATH}/build/src)
+endif()
 target_link_libraries(PhysicsSandbox PRIVATE
 	Qt${QT_VERSION_MAJOR}::Widgets
 	Qt${QT_VERSION_MAJOR}::OpenGL
