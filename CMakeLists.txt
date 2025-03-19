@@ -9,6 +9,27 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(BOX2D_PATH /home/ben/Documents/Git_Repositories/box2d)
+set(BOX2D_LIB_SUBDIR "")
+set(SKIA_LIB_SUBDIR "")
+set(SKIA_PATH "")
+if (ANDROID)
+  #arm64-v8a, armeabi-v7a, x86, x86_64
+  set(BOX2D_LIB_SUBDIR build-android-${ANDROID_ABI}/src)
+  if (${ANDROID_ABI} STREQUAL "arm64-v8a")
+    set(SKIA_PATH /home/ben/Downloads/Skia-m132-9b3c42e2f9-3-android-Release-arm64)
+    set(SKIA_LIB_SUBDIR Release-android-arm64)
+  elseif (${ANDROID_ABI} STREQUAL "x86_64")
+    set(SKIA_PATH /home/ben/Downloads/Skia-m132-9b3c42e2f9-3-android-Release-x64)
+    set(SKIA_LIB_SUBDIR Release-android-x64)
+  else()
+    message(CHECK_FAIL "Skia not available for Android ABI ${ANDROID_ABI}")
+  endif()
+elseif(LINUX)
+  set(BOX2D_LIB_SUBDIR build/src)
+  set(SKIA_PATH /home/ben/Downloads/Skia-m132-9b3c42e2f9-3-linux-Release-x64)
+  set(SKIA_LIB_SUBDIR Release-linux-x64)
+endif()
+
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS OpenGL OpenGLWidgets Widgets)
@@ -18,7 +39,7 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
 )
-include_directories(BEFORE ${BOX2D_PATH}/include)
+include_directories(BEFORE ${BOX2D_PATH}/include ${SKIA_PATH}/include)
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(PhysicsSandbox
@@ -48,11 +69,10 @@ else()
     endif()
 endif()
 
-if (ANDROID)
-  target_link_directories(PhysicsSandbox BEFORE PRIVATE ${BOX2D_PATH}/build-android-${ANDROID_ABI}/src)
-else()
-  target_link_directories(PhysicsSandbox BEFORE PRIVATE ${BOX2D_PATH}/build/src)
-endif()
+target_link_directories(PhysicsSandbox BEFORE PRIVATE
+  ${BOX2D_PATH}/${BOX2D_LIB_SUBDIR}
+  ${SKIA_PATH}/${SKIA_LIB_SUBDIR}
+)
 target_link_libraries(PhysicsSandbox PRIVATE
 	Qt${QT_VERSION_MAJOR}::Widgets
 	Qt${QT_VERSION_MAJOR}::OpenGL
