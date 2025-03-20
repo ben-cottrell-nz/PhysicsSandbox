@@ -17,17 +17,17 @@ if (ANDROID)
   set(BOX2D_LIB_SUBDIR build-android-${ANDROID_ABI}/src)
   if (${ANDROID_ABI} STREQUAL "arm64-v8a")
     set(SKIA_PATH /home/ben/Downloads/Skia-m132-9b3c42e2f9-3-android-Release-arm64)
-    set(SKIA_LIB_SUBDIR Release-android-arm64)
+    set(SKIA_LIB_SUBDIR out/Release-android-arm64)
   elseif (${ANDROID_ABI} STREQUAL "x86_64")
     set(SKIA_PATH /home/ben/Downloads/Skia-m132-9b3c42e2f9-3-android-Release-x64)
-    set(SKIA_LIB_SUBDIR Release-android-x64)
+    set(SKIA_LIB_SUBDIR out/Release-android-x64)
   else()
     message(CHECK_FAIL "Skia not available for Android ABI ${ANDROID_ABI}")
   endif()
 elseif(LINUX)
   set(BOX2D_LIB_SUBDIR build/src)
-  set(SKIA_PATH /home/ben/Downloads/Skia-m132-9b3c42e2f9-3-linux-Release-x64)
-  set(SKIA_LIB_SUBDIR Release-linux-x64)
+  set(SKIA_PATH /home/ben/Documents/Git_Repositories/skia)
+  set(SKIA_LIB_SUBDIR out/Static)
 endif()
 
 
@@ -39,13 +39,15 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
 )
-include_directories(BEFORE ${BOX2D_PATH}/include ${SKIA_PATH}/include)
+include_directories(BEFORE ${BOX2D_PATH}/include ${SKIA_PATH})
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(PhysicsSandbox
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
 				physworldview.h physworldview.cpp
+        physworldview_vulkan.h physworldview_vulkan.cpp
+
     )
 # Define target properties for Android with Qt 6 as:
 set_target_properties(${target} PROPERTIES
@@ -73,11 +75,14 @@ target_link_directories(PhysicsSandbox BEFORE PRIVATE
   ${BOX2D_PATH}/${BOX2D_LIB_SUBDIR}
   ${SKIA_PATH}/${SKIA_LIB_SUBDIR}
 )
+message(STATUS "Skia static lib path: ${SKIA_PATH}/${SKIA_LIB_SUBDIR}")
 target_link_libraries(PhysicsSandbox PRIVATE
 	Qt${QT_VERSION_MAJOR}::Widgets
 	Qt${QT_VERSION_MAJOR}::OpenGL
 	Qt${QT_VERSION_MAJOR}::OpenGLWidgets
-	box2d)
+  box2d
+  skia
+)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
