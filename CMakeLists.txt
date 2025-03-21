@@ -26,19 +26,20 @@ if (ANDROID)
   endif()
 elseif(LINUX)
   set(BOX2D_LIB_SUBDIR build/src)
-  set(SKIA_PATH /home/ben/Documents/Git_Repositories/skia)
-  set(SKIA_LIB_SUBDIR out/Static)
+  set(SKIA_PATH /home/ben/Downloads/Skia-m132-9b3c42e2f9-3-linux-Release-x64)
+  set(SKIA_LIB_SUBDIR out/Release-linux-x64)
 endif()
 
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS OpenGL OpenGLWidgets Widgets)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Qml Quick)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS OpenGL OpenGLWidgets Widgets Qml Quick)
 
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
         mainwindow.h
 )
+qt_add_resources(PROJECT_SOURCES resources.qrc)
 include_directories(BEFORE ${BOX2D_PATH}/include ${SKIA_PATH})
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -46,9 +47,15 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
 				physworldview.h physworldview.cpp
-        physworldview_vulkan.h physworldview_vulkan.cpp
 
+        resources.qrc
+        physworldview_gl_quick.h
+        physworldview_gl_quick.cpp
     )
+  qt_add_qml_module(PhysicsSandbox
+      URI Extras
+      QML_FILES main.qml
+  )
 # Define target properties for Android with Qt 6 as:
 set_target_properties(${target} PROPERTIES
     QT_ANDROID_PACKAGE_NAME "org.qtproject.example.PhysicsSandbox"
@@ -80,6 +87,8 @@ target_link_libraries(PhysicsSandbox PRIVATE
 	Qt${QT_VERSION_MAJOR}::Widgets
 	Qt${QT_VERSION_MAJOR}::OpenGL
 	Qt${QT_VERSION_MAJOR}::OpenGLWidgets
+  Qt${QT_VERSION_MAJOR}::Qml
+  Qt${QT_VERSION_MAJOR}::Quick
   box2d
   skia
 )
@@ -107,4 +116,10 @@ install(TARGETS PhysicsSandbox
 
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(PhysicsSandbox)
+  qt_generate_deploy_qml_app_script(
+    TARGET PhysicsSandbox
+    OUTPUT_SCRIPT deploy_script
+    MACOS_BUNDLE_POST_BUILD
+  NO_UNSUPPORTED_PLATFORM_ERROR
+  DEPLOY_USER_QML_MODULES_ON_UNSUPPORTED_PLATFORM)
 endif()
