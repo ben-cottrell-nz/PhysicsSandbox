@@ -5,7 +5,7 @@ Item {
     width: 512
     height: 512
 
-    PhysicsWorldView { anchors.fill: parent }
+    SkiaStar { width: 256; height: 256 }
 
     Text {
         text: "FPS: ?, Objects: ?"

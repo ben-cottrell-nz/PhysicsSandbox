@@ -1,4 +1,5 @@
 #include "physworldview_gl_quick.h"
+#include "src/gpu/ganesh/gl/GrGLDefines.h"
 #include <QRunnable>
 
 #define SK_GANESH
@@ -99,7 +100,7 @@ void PhysWorldViewRenderer::init()
     skDirectContext = GrDirectContexts::MakeGL(grGlInterface).release();
     GrGLFramebufferInfo fbInfo;
     fbInfo.fFBOID = 0;
-    fbInfo.fFormat = GL_RGBA8;
+    fbInfo.fFormat = GR_GL_RGBA8;
     SkColorType colorType = kRGBA_8888_SkColorType;
     GrBackendRenderTarget backendRenderTarget = GrBackendRenderTargets::MakeGL(
         m_viewportSize.width(),

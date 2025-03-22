@@ -26,8 +26,10 @@ if (ANDROID)
   endif()
 elseif(LINUX)
   set(BOX2D_LIB_SUBDIR build/src)
-  set(SKIA_PATH /home/ben/Downloads/Skia-m132-9b3c42e2f9-3-linux-Release-x64)
-  set(SKIA_LIB_SUBDIR out/Release-linux-x64)
+  #set(SKIA_PATH /home/ben/Downloads/Skia-m132-9b3c42e2f9-3-linux-Release-x64)
+  set(SKIA_PATH /home/ben/Documents/Git_Repositories/skia)
+  #set(SKIA_LIB_SUBDIR out/Release-linux-x64)
+  set(SKIA_LIB_SUBDIR out/Static-Debug)
 endif()
 
 
@@ -55,6 +57,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
   qt_add_qml_module(PhysicsSandbox
       URI Extras
       QML_FILES main.qml
+      SOURCES SkiaQuickItem.h
+      SOURCES SkiaQuickItem.cpp
+      SOURCES StarQuickItem.h
   )
 # Define target properties for Android with Qt 6 as:
 set_target_properties(${target} PROPERTIES
