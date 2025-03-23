@@ -1,7 +1,10 @@
 # PhysicsSandbox
 This started out as an experiment to render falling objects, using Box2D, with a subclassed QOpenGLWidget, and turned into a challenge to integrate Skia into a framebuffer used by a custom QQuickItem class.
 
-I apologize in advance for the quality of the code; it's intended as a proof of concept.
+I apologize in advance for the quality of the code; it's intended as a proof of concept. If its working well enough, I'll tidy up the code.
+
+## Credits
+Parts of the code were based on QtSkia: [https://github.com/QtSkia/QtSkia](https://github.com/QtSkia/QtSkia).
 
 ## Notes
 I built Skia for my Linux OS (endeavourOS), using this command line passed to `bin/gn' inside the cloned git repository for Skia:
