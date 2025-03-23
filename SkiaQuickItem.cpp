@@ -159,8 +159,8 @@ public slots:
     void shutdown()
     {
         context->makeCurrent(surface);
-        delete m_renderFbo;
-        delete m_displayFbo;
+        //delete m_renderFbo;
+        //delete m_displayFbo;
         //free skia
         skiaContext = nullptr;
         renderSurface = nullptr;
