@@ -32,6 +32,8 @@
 #include <QThread>
 #include <QSGTexture>
 
+std::mutex g_render_mutex;
+
 class TextureNode : public QObject, public QSGSimpleTextureNode {
     Q_OBJECT
 public:
@@ -103,6 +105,8 @@ public:
         , m_newHeight(size.height())
     {
     }
+    //To prevent sk_sp members from being double freed
+    ~SkiaObj() {}
     void initSizeBeforeReady() {
         m_size = m_item->size().toSize();
         m_newWidth = m_size.width();
@@ -112,6 +116,7 @@ signals:
     void textureReady(uint id, const QSize& size);
     void over();
 public slots:
+
     void renderNext()
     {
         context->makeCurrent(surface);
@@ -120,10 +125,10 @@ public slots:
             swapped = false;
             m_item->onInit(m_size.width(), m_size.height());
         } else if (needResize) {
-            delete m_renderFbo;
-            delete m_displayFbo;
-            m_renderFbo = nullptr;
-            m_displayFbo = nullptr;
+            m_renderFbo.reset();
+            //delete m_displayFbo;
+            //m_renderFbo = nullptr;
+            //m_displayFbo = nullptr;
             m_size = QSize(m_newWidth, m_newHeight);
             createFBO();
             needResize = false;
@@ -132,8 +137,12 @@ public slots:
         if (m_renderFbo != nullptr)
             m_renderFbo->bind();
         context->functions()->glViewport(0, 0, m_size.width(), m_size.height());
-
+        // context->functions()->glClearColor(1.0,1.0,1.0,1.0);
+        // context->functions()->glEnable(GL_DEPTH_TEST);
+        // context->functions()->glClearDepthf(1.0);
+        m_renderFbo->bindDefault();
         //render
+#if 0
         if (swapped) {
             displaySurface->getCanvas()->save();
             m_item->draw(displaySurface->getCanvas(), 16);
@@ -144,27 +153,29 @@ public slots:
             SkAutoCanvasRestore cs(renderSurface->getCanvas(), true);
             m_item->draw(renderSurface->getCanvas(), 16);
         }
+#endif
+        Q_ASSERT(renderSurface != nullptr);
+        Q_ASSERT(renderSurface->getCanvas() != nullptr);
+        renderSurface->getCanvas()->save();
+        SkAutoCanvasRestore cs(renderSurface->getCanvas(), true);
+        std::lock_guard<std::mutex> guard(g_render_mutex);
+        m_item->draw(renderSurface->getCanvas(), 16);
+        skiaContext->flush();
         context->functions()->glFlush();
-        //skiaContext->flush();
-        m_renderFbo->bindDefault();
-        std::swap(m_renderFbo, m_displayFbo);
-        swapped = !swapped;
-        emit textureReady(m_displayFbo->texture(), m_size);
+        //std::swap(m_renderFbo, m_displayFbo);
+        //swapped = !swapped;
+        emit textureReady(m_renderFbo->texture(), m_size);
+        /*
         if (!swapped) {
             displaySurface->getCanvas()->restore();
         } else {
             renderSurface->getCanvas()->restore();
         }
+        */
     }
     void shutdown()
     {
         context->makeCurrent(surface);
-        delete m_renderFbo;
-        delete m_displayFbo;
-        //free skia
-        skiaContext = nullptr;
-        renderSurface = nullptr;
-        displaySurface = nullptr;
         context->doneCurrent();
         delete context;
         surface->deleteLater();
@@ -185,8 +196,8 @@ protected:
     void createFBO() {
         QOpenGLFramebufferObjectFormat format;
         format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-        m_renderFbo = new QOpenGLFramebufferObject(m_size, format);
-        m_displayFbo = new QOpenGLFramebufferObject(m_size, format);
+        m_renderFbo.reset(new QOpenGLFramebufferObject(m_size, format));
+        //m_displayFbo = new QOpenGLFramebufferObject(m_size, format);
         //init skia
         auto interface = GrGLMakeNativeInterface();
         if (interface == nullptr) {
@@ -197,7 +208,7 @@ protected:
                 }
             );
         }
-        skiaContext = GrDirectContexts::MakeGL(interface);
+        skiaContext.reset(GrDirectContexts::MakeGL(interface).release());
         SkColorType colorType;
         colorType = kRGBA_8888_SkColorType;
         // setup SkSurface
@@ -221,10 +232,11 @@ protected:
             renderSurface = SkSurfaces::MakeFromBackendRenderTarget(
                 skiaContext.get(), backend, kBottomLeft_GrSurfaceOrigin, colorType, nullptr, &props);
             */
-            renderSurface = SkSurfaces::WrapBackendRenderTarget(
-                skiaContext.get(), backend, kBottomLeft_GrSurfaceOrigin, colorType, nullptr, &props);
+            renderSurface.reset(SkSurfaces::WrapBackendRenderTarget(
+                                skiaContext.get(), backend, kBottomLeft_GrSurfaceOrigin, colorType, nullptr, &props).release());
             Q_ASSERT(renderSurface != nullptr);
         }
+#if 0
         {
             GrGLFramebufferInfo info;
             info.fFBOID = m_displayFbo->handle();
@@ -241,16 +253,17 @@ protected:
                 skiaContext.get(), backend, kBottomLeft_GrSurfaceOrigin, colorType, nullptr, &props);
             Q_ASSERT(displaySurface != nullptr);
         }
+        #endif
     }
 private:
     std::atomic<bool> needResize = false;
     bool swapped = false;
     SkiaQuickItem* m_item;
-    QOpenGLFramebufferObject* m_renderFbo = nullptr;
-    QOpenGLFramebufferObject* m_displayFbo = nullptr;
-    sk_sp<GrDirectContext> skiaContext = nullptr;
-    sk_sp<SkSurface> renderSurface = nullptr;
-    sk_sp<SkSurface> displaySurface = nullptr;
+    std::shared_ptr<QOpenGLFramebufferObject> m_renderFbo = nullptr;
+    //QOpenGLFramebufferObject* m_displayFbo = nullptr;
+    std::shared_ptr<GrDirectContext> skiaContext = nullptr;
+    std::shared_ptr<SkSurface> renderSurface = nullptr;
+    //std::atomic<std::shared_ptr<SkSurface>> displaySurface = nullptr;
     QSize m_size;
     QAtomicInt m_newWidth;
     QAtomicInt m_newHeight;
@@ -275,7 +288,7 @@ public:
         skiaObj->context->setFormat(format);
         skiaObj->context->setShareContext(current);
         skiaObj->context->create();
-        skiaObj->context->moveToThread(thread);
+        //skiaObj->context->moveToThread(thread);
 
         current->makeCurrent(item->window());
         inited = true;
@@ -289,7 +302,7 @@ public slots:
 
         skiaObj->initSizeBeforeReady();
 
-        skiaObj->moveToThread(thread);
+        //skiaObj->moveToThread(thread);
         QObject::connect(item->window(), &QQuickWindow::sceneGraphInvalidated, skiaObj, &SkiaObj::shutdown, Qt::QueuedConnection);
         QObject::connect(skiaObj, &SkiaObj::over, thread, &QThread::quit, Qt::QueuedConnection);
         QObject::connect(skiaObj, &SkiaObj::over, skiaObj, &QObject::deleteLater);

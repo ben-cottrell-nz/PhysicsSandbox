@@ -5,7 +5,7 @@ Item {
     width: 512
     height: 512
 
-    SkiaStar { width: 256; height: 256 }
+    SkiaStar { anchors.fill: parent }
 
     Text {
         text: "FPS: ?, Objects: ?"
