@@ -10,6 +10,8 @@
 class StarQuickItem : public SkiaQuickItem
 {
     Q_OBJECT
+private:
+    int m_timeCounter;
 public:
     virtual void onInit(int w, int h) override
     {
@@ -18,6 +20,8 @@ public:
     virtual void onResize(int w, int h) override {}
     virtual void draw(SkCanvas* canvas, int elapsed) override
     {
+        m_timeCounter += elapsed;
+        m_timeCounter = m_timeCounter % 1000;
         auto size = this->size().toSize();
         canvas->clear(SkColor4f::FromColor(SK_ColorWHITE));
         // Straight from the demo code (https://fiddle.skia.org/c/@shapes)
@@ -25,10 +29,10 @@ public:
         SkPaint paint;
         paint.setStyle(SkPaint::kFill_Style);
         paint.setAntiAlias(true);
-        paint.setStrokeWidth(4);
+        paint.setStrokeWidth(m_timeCounter / 1000.f * 8);
         paint.setColor(0xff4285F4);
 
-        SkRect rect = SkRect::MakeXYWH(10, 10, 100, 160);
+        SkRect rect = SkRect::MakeXYWH(10, 10, 100 * sin(m_timeCounter / 1000.f * M_PI), 160);
         canvas->drawRect(rect, paint);
 
         SkRRect oval;

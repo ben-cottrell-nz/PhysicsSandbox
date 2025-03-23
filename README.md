@@ -1,3 +1,10 @@
+<div>
+<a href="https://scan.coverity.com/projects/ben-cottrell-nz-physicssandbox">
+  <img alt="Coverity Scan Build Status"
+       src="https://scan.coverity.com/projects/31502/badge.svg"/>
+</a>
+</div>
+
 # PhysicsSandbox
 This started out as an experiment to render falling objects, using Box2D, with a subclassed QOpenGLWidget, and turned into a challenge to integrate Skia into a framebuffer used by a custom QQuickItem class.
 

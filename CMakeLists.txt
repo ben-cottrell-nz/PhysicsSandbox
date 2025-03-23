@@ -5,9 +5,11 @@ project(PhysicsSandbox VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS YES)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 if (CMAKE_COMPILER_IS_GNUCXX)
   #add_compile_options(-fsanitize=thread -fPIE -pie -fdata-sections -ffunction-sections -Wl,--gc-sections -Wl,-s -flto)
   #add_link_options(-fsanitize=thread -fPIE -pie -fdata-sections -ffunction-sections -Wl,--gc-sections -Wl,-s -flto)
