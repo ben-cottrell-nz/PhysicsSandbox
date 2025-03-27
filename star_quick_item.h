@@ -1,11 +1,12 @@
-#ifndef STARQUICKITEM_H
-#define STARQUICKITEM_H
-#include "SkiaQuickItem.h"
+#ifndef STAR_QUICK_ITEM_H
+#define STAR_QUICK_ITEM_H
+#include "skia_quick_item.h"
 #include "include/core/SkCanvas.h"
 #include "include/core/SkFont.h"
 #include "include/core/SkPaint.h"
 #include "include/core/SkRect.h"
 #include "include/core/SkRRect.h"
+
 
 class StarQuickItem : public SkiaQuickItem
 {
@@ -53,4 +54,4 @@ public:
 };
 
 
-#endif // STARQUICKITEM_H
+#endif // STAR_QUICK_ITEM_H

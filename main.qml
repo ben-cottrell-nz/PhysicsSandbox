@@ -1,24 +1,17 @@
 import QtQuick 2.15
+import QtQuick.Controls.Basic 2.15
 import Extras 1.0
 
 Item {
     width: 512
     height: 512
 
-    SkiaStar {
-        id: skiaStar
-        width: 512; height: 512
-        SequentialAnimation {
-            running: true
-            NumberAnimation { target: skiaStar; property: "x"; to: 50; duration: 500 }
-            NumberAnimation { target: skiaStar; property: "y"; to: 50; duration: 500 }
-            loops: Animation.Infinite
-        }
+    PhysWorldView {
+        id: physWorldView
+        anchors.fill: parent
     }
-
-    Text {
-        text: "FPS: ?, Objects: ?"
-        color: Qt.black
-        font.pointSize: 26
+    Button {
+        onClicked:  physWorldView.testAddBoxes();
+        text: "Run Test: \"Add Boxes\""
     }
 }

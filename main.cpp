@@ -1,22 +1,32 @@
-#include "mainwindow.h"
 #include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQuickWindow>
 #include <QQuickView>
-#include "StarQuickItem.h"
+#include <QSGRendererInterface>
+#include "physworldview_skia_quickitem.h"
+
+inline bool initializeSceneGraph()
+{
+    QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
+    if (QQuickWindow::graphicsApi() != QSGRendererInterface::OpenGL) {
+        qDebug("Quick graphics API is not using OpenGL, exiting");
+        return false;
+    }
+    return true;
+}
 
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
-    //QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
+    //if (!initializeSceneGraph()) return 1;
+    QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
     QQuickView view;
-    //view.loadFromModule(u"Extras", u"Main");
-    //qmlRegisterType<PhysicsWorldView>("Extras", 1, 0, "PhysicsWorldView");
-    qmlRegisterType<StarQuickItem>("Extras", 1,0, "SkiaStar");
+    qmlRegisterType<PhysWorldViewSkia>("Extras", 1,0, "PhysWorldView");
     view.setSource(QUrl("qrc:/main.qml"));
     if (view.status() == QQuickView::Error)
         return -1;
     view.setResizeMode(QQuickView::SizeRootObjectToView);
     view.show();
+    view.setWindowState(Qt::WindowMaximized);
     return app.exec();
 }

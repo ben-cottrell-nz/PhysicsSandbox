@@ -1,5 +1,5 @@
-#ifndef SKIAQUICKITEM_H
-#define SKIAQUICKITEM_H
+#ifndef SKIA_QUICK_ITEM_H
+#define SKIA_QUICK_ITEM_H
 // Source: https://github.com/QtSkia/QtSkia/blob/master/QtSkia/QtSkiaQuick/QuickItem/QSkiaQuickItem.h
 #include <QQuickItem>
 class SkCanvas;
@@ -22,4 +22,4 @@ protected:
 private:
     SkiaQuickItemPrivate *m_dptr;
 };
-#endif // SKIAQUICKITEM_H
+#endif // SKIA_QUICK_ITEM_H

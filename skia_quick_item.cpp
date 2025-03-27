@@ -1,5 +1,5 @@
 // Based on https://github.com/QtSkia/QtSkia/blob/master/QtSkia/QtSkiaQuick/QuickItem/QSkiaQuickItem.cpp
-#include "SkiaQuickItem.h"
+#include "skia_quick_item.h"
 #include "include/gpu/ganesh/GrBackendSurface.h"
 
 #define SK_GANESH
@@ -114,6 +114,7 @@ signals:
 public slots:
     void renderNext()
     {
+        //m_item->window()->beginExternalCommands();
         context->makeCurrent(surface);
         if (!m_renderFbo) {
             createFBO();
@@ -127,6 +128,7 @@ public slots:
             m_size = QSize(m_newWidth, m_newHeight);
             createFBO();
             needResize = false;
+            m_item->window()->setColor(Qt::white);
             m_item->onResize(m_size.width(), m_size.height());
         }
         if (m_renderFbo != nullptr)
@@ -155,6 +157,7 @@ public slots:
         } else {
             renderSurface->getCanvas()->restore();
         }
+        //m_item->window()->endExternalCommands();
     }
     void shutdown()
     {
@@ -358,4 +361,4 @@ QSGNode* SkiaQuickItem::updatePaintNode(QSGNode* oldNode, QQuickItem::UpdatePain
     return node;
 }
 
-#include "SkiaQuickItem.moc"
+#include "skia_quick_item.moc"

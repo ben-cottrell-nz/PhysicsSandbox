@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 #include <QLabel>
-#include "physworldview.h"
+#include "physworldview_original.h"
 
 class MainWindow : public QMainWindow
 {

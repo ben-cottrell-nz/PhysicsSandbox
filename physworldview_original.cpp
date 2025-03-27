@@ -1,4 +1,4 @@
-#include "physworldview.h"
+#include "physworldview_original.h"
 #include <QPainter>
 #include <QOpenGLFunctions>
 #include <random>

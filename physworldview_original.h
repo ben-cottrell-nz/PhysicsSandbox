@@ -1,5 +1,5 @@
-#ifndef PHYSWORLDVIEW_H
-#define PHYSWORLDVIEW_H
+#ifndef PHYSWORLDVIEW_ORIGINAL_H
+#define PHYSWORLDVIEW_ORIGINAL_H
 
 #include <QObject>
 #include <QOpenGLWidget>
@@ -64,4 +64,4 @@ private:
     QLabel* fpsCounterLabel;
 };
 
-#endif // PHYSWORLDVIEW_H
+#endif // PHYSWORLDVIEW_ORIGINAL_H
